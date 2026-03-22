@@ -597,6 +597,7 @@ const deleteProgress = ref(0)
 const isDeleting = ref(false)
 const activeProfileId = ref(null)
 const showNoStorageWarning = ref(false)
+const cachedActiveProfile = ref(null)
 
 const currentFolders = computed(() => {
   if (!currentFolderId.value) return rootFolders.value
@@ -613,13 +614,19 @@ const isSelected = computed(() => {
   return (id, type) => selected.has(`${type}-${id}`)
 })
 
-let lastLoadedProfileId = null
+const getActiveProfile = async () => {
+  if (!user.value) return null
+  if (cachedActiveProfile.value) return cachedActiveProfile.value
+  
+  const { getActiveProfileId } = await import('../lib/storage.js')
+  cachedActiveProfile.value = await getActiveProfileId()
+  return cachedActiveProfile.value
+}
 
 const loadFolders = async () => {
   if (!user.value) return
   
-  const { getActiveProfileId } = await import('../lib/storage.js')
-  const activeProfile = await getActiveProfileId()
+  const activeProfile = await getActiveProfile()
   
   let query = supabase
     .from('folders')
@@ -653,8 +660,7 @@ const loadFolders = async () => {
 const loadFiles = async () => {
   if (!user.value) return
   
-  const { getActiveProfileId } = await import('../lib/storage.js')
-  const activeProfile = await getActiveProfileId()
+  const activeProfile = await getActiveProfile()
   activeProfileId.value = activeProfile
   
   let query = supabase
@@ -1309,6 +1315,7 @@ const handleDropRoot = async () => {
 }
 
 const checkActiveProfile = async () => {
+  cachedActiveProfile.value = null
   const { getActiveProfileId } = await import('../lib/storage.js')
   activeProfileId.value = await getActiveProfileId()
 }

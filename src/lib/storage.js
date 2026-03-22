@@ -6,34 +6,66 @@ let s3Client = null
 let cachedConfig = null
 let cachedProfileId = null
 let configLoadTime = 0
-const CONFIG_CACHE_DURATION = 5000
+let profileLoadTime = 0
+const CONFIG_CACHE_DURATION = 60000
+const PROFILE_CACHE_DURATION = 30000
 
-const loadStorageConfig = async () => {
+const getActiveProfileIdCached = async () => {
+  const now = Date.now()
+  
+  if (cachedProfileId && (now - profileLoadTime) < PROFILE_CACHE_DURATION) {
+    return cachedProfileId
+  }
+  
+  try {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session?.user) {
+      cachedProfileId = null
+      profileLoadTime = now
+      return null
+    }
+    
+    const { data } = await supabase
+      .from('storage_profiles')
+      .select('id')
+      .eq('user_id', session.user.id)
+      .eq('is_active', true)
+      .single()
+    
+    cachedProfileId = data?.id || null
+    profileLoadTime = now
+    return cachedProfileId
+  } catch (err) {
+    cachedProfileId = null
+    profileLoadTime = now
+    return null
+  }
+}
+
+const getStorageConfig = async () => {
   const now = Date.now()
   
   if (cachedConfig && (now - configLoadTime) < CONFIG_CACHE_DURATION) {
-    return { config: cachedConfig, profileId: cachedProfileId }
+    return cachedConfig
   }
   
   try {
     const { data: { session } } = await supabase.auth.getSession()
     if (!session?.user) {
       cachedConfig = null
-      cachedProfileId = null
       configLoadTime = now
-      return { config: null, profileId: null }
+      return null
     }
     
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from('storage_profiles')
       .select('*')
       .eq('user_id', session.user.id)
       .eq('is_active', true)
       .single()
     
-    if (error || !data || !data.endpoint || !data.access_key_id || !data.secret_access_key || !data.bucket) {
+    if (!data || !data.endpoint || !data.access_key_id || !data.secret_access_key || !data.bucket) {
       cachedConfig = null
-      cachedProfileId = null
     } else {
       cachedConfig = {
         endpoint: data.endpoint,
@@ -44,34 +76,19 @@ const loadStorageConfig = async () => {
         },
         bucket: data.bucket
       }
-      cachedProfileId = data.id
     }
     
     configLoadTime = now
-    return { config: cachedConfig, profileId: cachedProfileId }
+    return cachedConfig
   } catch (err) {
-    console.error('Failed to load storage config:', err)
     cachedConfig = null
-    cachedProfileId = null
     configLoadTime = now
-    return { config: null, profileId: null }
-  }
-}
-
-const checkSettingsUpdated = () => {
-  const updated = localStorage.getItem('storageSettingsUpdated')
-  if (updated && cachedConfig) {
-    const updatedTime = parseInt(updated)
-    if (updatedTime > configLoadTime) {
-      cachedConfig = null
-      cachedProfileId = null
-      configLoadTime = 0
-    }
+    return null
   }
 }
 
 const recreateS3Client = async () => {
-  const { config } = await loadStorageConfig()
+  const config = await getStorageConfig()
   if (!config) return null
   
   s3Client = new S3Client({
@@ -82,19 +99,17 @@ const recreateS3Client = async () => {
   return s3Client
 }
 
-export const getActiveProfileId = async () => {
-  const { profileId } = await loadStorageConfig()
-  return profileId
-}
+export const getActiveProfileId = getActiveProfileIdCached
 
 export const uploadFileToStorage = async (data, fileName, mimeType, userId) => {
-  const { config, profileId } = await loadStorageConfig()
-  if (!config || !profileId) {
+  const config = await getStorageConfig()
+  if (!config) {
     throw new Error('No active storage profile')
   }
   
   await recreateS3Client()
   
+  const profileId = cachedProfileId || 'default'
   const key = `${profileId}/${Date.now()}-${fileName}`
   
   const command = new PutObjectCommand({
@@ -105,11 +120,11 @@ export const uploadFileToStorage = async (data, fileName, mimeType, userId) => {
   })
   
   await s3Client.send(command)
-  return { key, profileId }
+  return { key, profileId: cachedProfileId }
 }
 
 export const getDownloadUrl = async (key) => {
-  const { config } = await loadStorageConfig()
+  const config = await getStorageConfig()
   if (!config) {
     throw new Error('No active storage profile')
   }
@@ -121,12 +136,11 @@ export const getDownloadUrl = async (key) => {
     Key: key
   })
   
-  const url = await getSignedUrl(s3Client, command, { expiresIn: 3600 })
-  return url
+  return await getSignedUrl(s3Client, command, { expiresIn: 3600 })
 }
 
 export const deleteFileFromStorage = async (key) => {
-  const { config } = await loadStorageConfig()
+  const config = await getStorageConfig()
   if (!config) {
     throw new Error('No active storage profile')
   }
@@ -145,5 +159,6 @@ export const clearStorageCache = () => {
   cachedConfig = null
   cachedProfileId = null
   configLoadTime = 0
+  profileLoadTime = 0
   s3Client = null
 }
