@@ -91,9 +91,9 @@
       </div>
     </div>
     
-    <main class="flex-1 overflow-auto bg-gradient-to-br from-gray-900 via-black to-gray-900 p-6">
+    <main class="flex-1 overflow-auto bg-dark-900 p-6">
       <div class="mb-6">
-        <div class="flex items-center gap-2 text-sm text-gray-400 mb-4">
+        <div class="flex items-center gap-2 text-sm text-gray-500 mb-6">
           <button @click="navigateRoot" class="hover:text-white transition">Home</button>
           <template v-for="(crumb, index) in breadcrumbs" :key="crumb.id">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -109,10 +109,10 @@
           </template>
         </div>
         
-        <div class="flex gap-4 flex-wrap">
+        <div class="flex gap-3 flex-wrap">
           <button 
             @click="showCreateFolderModal = true; parentFolderId = currentFolderId"
-            class="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
+            class="flex items-center gap-2 bg-accent-green text-white px-4 py-2.5 rounded-xl hover:opacity-90 transition font-medium"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
@@ -121,7 +121,7 @@
           </button>
           <button 
             @click="showCreateFileModal = true; parentFileFolderId = currentFolderId"
-            class="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+            class="flex items-center gap-2 bg-accent-purple text-white px-4 py-2.5 rounded-xl hover:opacity-90 transition font-medium"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -130,7 +130,7 @@
           </button>
           <button 
             @click="showCreateSpreadsheetModal = true; parentSpreadsheetFolderId = currentFolderId"
-            class="flex items-center gap-2 bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition"
+            class="flex items-center gap-2 bg-accent-purple text-white px-4 py-2.5 rounded-xl hover:opacity-90 transition font-medium"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
@@ -139,8 +139,8 @@
           </button>
           <button 
             @click="selectMode = !selectMode; selectedItems = []"
-            class="flex items-center gap-2 px-4 py-2 rounded-lg transition"
-            :class="selectMode ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-gray-700 text-white hover:bg-gray-600'"
+            class="flex items-center gap-2 px-4 py-2.5 rounded-xl transition font-medium"
+            :class="selectMode ? 'bg-accent-green text-white hover:opacity-90' : 'bg-dark-700 text-white hover:bg-dark-600'"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
@@ -150,14 +150,14 @@
           <button 
             v-if="selectedItems.length > 0"
             @click="showMoveModal = true"
-            class="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+            class="flex items-center gap-2 bg-accent-purple text-white px-4 py-2.5 rounded-xl hover:opacity-90 transition font-medium"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
             </svg>
             Move to ({{ selectedItems.length }})
           </button>
-          <label class="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition cursor-pointer">
+          <label class="flex items-center gap-2 bg-accent-purple text-white px-4 py-2.5 rounded-xl hover:opacity-90 transition font-medium cursor-pointer">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
             </svg>
@@ -166,14 +166,14 @@
           </label>
         </div>
         
-        <div v-if="showNoStorageWarning || !activeProfileId" class="mt-4 p-4 bg-yellow-900/30 border border-yellow-500/50 rounded-lg">
+        <div v-if="showNoStorageWarning || !activeProfileId" class="mt-4 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl">
           <div class="flex items-center gap-3">
-            <svg class="w-6 h-6 text-yellow-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5 text-yellow-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
             </svg>
             <div class="flex-1">
               <p class="text-yellow-300 font-medium">No storage profile active</p>
-              <p class="text-yellow-400/70 text-sm">Set up a storage profile in Settings to upload files</p>
+              <p class="text-gray-400 text-sm">Set up a storage profile in Settings to upload files</p>
             </div>
             <router-link to="/settings" class="px-4 py-2 bg-yellow-500 text-black text-sm font-medium rounded-lg hover:bg-yellow-400 transition">
               Go to Settings
@@ -191,14 +191,14 @@
         <p class="text-sm mt-2">Create a folder or add files to get started</p>
       </div>
       
-      <div v-else class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+      <div v-else class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-3">
         <div 
           v-for="folder in currentFolders" 
           :key="folder.id"
-          class="bg-black/50 border p-4 rounded-xl transition group relative"
+          class="bg-dark-800 border border-white/5 p-3 rounded-2xl transition-all duration-200 group relative cursor-pointer"
           :class="[
-            dropTargetFolder === folder.id ? 'border-green-400 bg-green-900/30' : '',
-            isSelected(folder.id, 'folder') ? 'border-green-500' : 'border-green-500/30 hover:border-green-500'
+            dropTargetFolder === folder.id ? 'border-accent-green/50 bg-accent-green/10' : '',
+            isSelected(folder.id, 'folder') ? 'border-accent-purple' : 'hover:border-white/10'
           ]"
           :draggable="!selectMode"
           @dragstart="handleFolderDragStart($event, folder)"
@@ -216,26 +216,26 @@
                 :checked="isSelected(folder.id, 'folder')"
                 @click.stop
                 @change="toggleSelect(folder, 'folder')"
-                class="w-5 h-5 rounded accent-green-500 cursor-pointer"
+                class="w-4 h-4 rounded accent-accent-purple cursor-pointer"
               >
-              <svg class="w-12 h-12" fill="currentColor" viewBox="0 0 24 24" :style="{ color: getFolderColor(folder.id) }">
+              <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24" :style="{ color: getFolderColor(folder.id) }">
                 <path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
               </svg>
             </div>
             <div class="relative" @click.stop>
-              <button @click="openMenuId = openMenuId === folder.id ? null : folder.id" class="p-1 opacity-0 group-hover:opacity-100 hover:bg-gray-700 rounded transition">
-                <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+              <button @click="openMenuId = openMenuId === folder.id ? null : folder.id" class="p-1 opacity-0 group-hover:opacity-100 hover:bg-white/10 rounded-lg transition">
+                <svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
                 </svg>
               </button>
-              <div v-if="openMenuId === folder.id" class="absolute right-0 top-8 bg-gray-800 border border-gray-600 rounded-lg shadow-lg py-1 w-36 z-10">
-                <button @click="startRenameFolder(folder)" class="w-full px-4 py-2 text-left text-gray-300 hover:bg-gray-700 flex items-center gap-2">
+              <div v-if="openMenuId === folder.id" class="absolute right-0 top-7 bg-dark-700 border border-white/10 rounded-xl shadow-2xl py-1 w-32 z-20">
+                <button @click="startRenameFolder(folder)" class="w-full px-3 py-2 text-left text-sm text-gray-300 hover:bg-white/5 flex items-center gap-2">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                   </svg>
                   Rename
                 </button>
-                <button @click="showDeleteConfirm('folder', folder); openMenuId = null" class="w-full px-4 py-2 text-left text-red-400 hover:bg-gray-700 flex items-center gap-2">
+                <button @click="showDeleteConfirm('folder', folder); openMenuId = null" class="w-full px-3 py-2 text-left text-sm text-red-400 hover:bg-white/5 flex items-center gap-2">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                   </svg>
@@ -244,38 +244,28 @@
               </div>
             </div>
           </div>
-          <p v-if="renamingFolderId !== folder.id" class="text-white text-sm truncate" :class="{ 'ml-8': selectMode }">{{ folder.name }}</p>
+          <p v-if="renamingFolderId !== folder.id" class="text-white/90 text-xs truncate font-medium" :class="{ 'ml-6': selectMode }">{{ folder.name }}</p>
           <input 
             v-else
             v-model="renamingFolderName"
             ref="renameInput"
-            class="w-full bg-gray-800 border border-green-500 rounded px-2 py-1 text-white text-sm focus:outline-none"
+            class="w-full bg-dark-600 border border-accent-purple rounded-lg px-2 py-1 text-white text-xs focus:outline-none"
             @blur="saveRenameFolder"
             @keyup.enter="saveRenameFolder"
             @keyup.escape="cancelRenameFolder"
             @click.stop
           >
-          <p class="text-gray-500 text-xs">{{ formatDate(folder.updated_at) }}</p>
-          <p v-if="dropTargetFolder === folder.id" class="text-green-400 text-xs mt-1">Drop here</p>
+          <p class="text-gray-500 text-[10px] mt-1">{{ formatDate(folder.updated_at) }}</p>
+          <p v-if="dropTargetFolder === folder.id" class="text-accent-green text-[10px] mt-1">Drop here</p>
         </div>
         
         <div 
           v-for="file in currentFiles" 
           :key="file.id"
           :data-file-id="file.id"
-          class="bg-black/50 border p-4 rounded-xl cursor-pointer transition group relative"
+          class="bg-dark-800 border border-white/5 p-3 rounded-2xl cursor-pointer transition-all duration-200 group relative"
           :class="[
-            isSelected(file.id, 'file') ? 'border-green-500' : '',
-            !isSelected(file.id, 'file') && file.type === 'document' ? 'border-blue-500/30 hover:border-blue-500' : '',
-            !isSelected(file.id, 'file') && file.type === 'spreadsheet' ? 'border-green-500/30 hover:border-green-500' : '',
-            !isSelected(file.id, 'file') && file.type === 'image' ? 'border-yellow-500/30 hover:border-yellow-500' : '',
-            !isSelected(file.id, 'file') && file.type === 'video' ? 'border-red-500/30 hover:border-red-500' : '',
-            !isSelected(file.id, 'file') && file.type === 'audio' ? 'border-pink-500/30 hover:border-pink-500' : '',
-            !isSelected(file.id, 'file') && file.type === 'docx' ? 'border-blue-400/30 hover:border-blue-400' : '',
-            !isSelected(file.id, 'file') && file.type === 'xlsx' ? 'border-emerald-500/30 hover:border-emerald-500' : '',
-            !isSelected(file.id, 'file') && file.type === 'pdf' ? 'border-orange-500/30 hover:border-orange-500' : '',
-            !isSelected(file.id, 'file') && file.type === 'pptx' ? 'border-purple-500/30 hover:border-purple-500' : '',
-            !isSelected(file.id, 'file') && (file.type === 'archive' || file.type === 'text' || file.type === 'upload') ? 'border-gray-500/30 hover:border-gray-500' : ''
+            isSelected(file.id, 'file') ? 'border-accent-purple' : 'hover:border-white/10',
           ]"
           :draggable="!selectMode"
           @dragstart="handleFileDragStart($event, file)"
@@ -290,78 +280,76 @@
                 :checked="isSelected(file.id, 'file')"
                 @click.stop
                 @change="toggleSelect(file, 'file')"
-                class="w-5 h-5 rounded accent-green-500 cursor-pointer"
+                class="w-4 h-4 rounded accent-accent-purple cursor-pointer"
               >
-              <div v-if="file.type === 'image'" class="w-12 h-12 rounded-lg overflow-hidden bg-gray-700">
-              <img v-if="thumbnails[file.id]" :src="thumbnails[file.id]" class="w-full h-full object-cover" />
-              <svg v-else class="w-12 h-12 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-              </svg>
-            </div>
-            <div v-else-if="file.type === 'video'" class="w-12 h-12 rounded-lg overflow-hidden bg-gray-700 relative">
-              <img v-if="thumbnails[file.id]" :src="thumbnails[file.id]" class="w-full h-full object-cover" />
-              <svg v-else class="w-12 h-12 text-red-400 absolute inset-0 m-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-              </svg>
-              <div v-if="thumbnails[file.id]" class="absolute inset-0 flex items-center justify-center bg-black/30">
-                <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M8 5v14l11-7z"/>
+              <div v-if="file.type === 'image'" class="w-8 h-8 rounded-lg overflow-hidden bg-dark-600">
+                <img v-if="thumbnails[file.id]" :src="thumbnails[file.id]" class="w-full h-full object-cover" />
+                <svg v-else class="w-full h-full text-accent-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                 </svg>
               </div>
+              <div v-else-if="file.type === 'video'" class="w-8 h-8 rounded-lg overflow-hidden bg-dark-600 relative">
+                <img v-if="thumbnails[file.id]" :src="thumbnails[file.id]" class="w-full h-full object-cover" />
+                <svg v-else class="w-full h-full text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                </svg>
+                <div v-if="thumbnails[file.id]" class="absolute inset-0 flex items-center justify-center bg-black/30">
+                  <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z"/>
+                  </svg>
+                </div>
+              </div>
+              <svg v-else-if="file.type === 'audio'" class="w-8 h-8 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+              </svg>
+              <svg v-else-if="file.type === 'docx'" class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+              <svg v-else-if="file.type === 'xlsx'" class="w-8 h-8 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+              </svg>
+              <svg v-else-if="file.type === 'pdf'" class="w-8 h-8 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+              </svg>
+              <svg v-else-if="file.type === 'pptx'" class="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/>
+              </svg>
+              <svg v-else-if="file.type === 'archive'" class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
+              </svg>
+              <svg v-else-if="file.type === 'document'" class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+              <svg v-else-if="file.type === 'spreadsheet'" class="w-8 h-8 text-accent-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+              </svg>
+              <svg v-else class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+              </svg>
             </div>
-            <svg v-else-if="file.type === 'audio'" class="w-12 h-12 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
-            </svg>
-            <svg v-else-if="file.type === 'docx'" class="w-12 h-12 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" fill="none"/>
-            </svg>
-            <svg v-else-if="file.type === 'xlsx'" class="w-12 h-12 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-            </svg>
-            <svg v-else-if="file.type === 'pdf'" class="w-12 h-12 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-            </svg>
-            <svg v-else-if="file.type === 'pptx'" class="w-12 h-12 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/>
-            </svg>
-            <svg v-else-if="file.type === 'archive'" class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
-            </svg>
-            <svg v-else-if="file.type === 'document'" class="w-12 h-12 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
-            <svg v-else-if="file.type === 'spreadsheet'" class="w-12 h-12 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-            </svg>
-            <svg v-else class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-            </svg>
-            </div>
-            <div class="flex gap-1">
+            <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
               <button 
                 v-if="['image', 'video', 'audio', 'upload'].includes(file.type)"
                 @click.stop="downloadUploadedFile(file)"
-                class="p-1 opacity-0 group-hover:opacity-100 hover:bg-green-500/20 rounded transition"
+                class="p-1.5 hover:bg-white/10 rounded-lg transition"
                 title="Download"
               >
-                <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                 </svg>
               </button>
               <button 
                 @click.stop="showDeleteConfirm('file', file)"
-                class="p-1 opacity-0 group-hover:opacity-100 hover:bg-red-500/20 rounded transition"
+                class="p-1.5 hover:bg-white/10 rounded-lg transition"
               >
-                <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                 </svg>
               </button>
             </div>
           </div>
-          <p class="text-white text-sm truncate" :class="{ 'ml-8': selectMode }">{{ file.name }}</p>
-          <p class="text-gray-500 text-xs">{{ formatDate(file.updated_at) }}</p>
+          <p class="text-white/90 text-xs truncate font-medium" :class="{ 'ml-6': selectMode }">{{ file.name }}</p>
+          <p class="text-gray-500 text-[10px] mt-1">{{ formatDate(file.updated_at) }}</p>
         </div>
       </div>
     </main>

@@ -1,15 +1,15 @@
 <template>
-  <div class="pl-4">
+  <div class="pl-2">
     <div 
       v-for="folder in folders" 
       :key="folder.id"
-      class="mb-1"
+      class="mb-0.5"
     >
       <div 
-        class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-800 text-gray-300 cursor-pointer transition"
+        class="flex items-center gap-1.5 px-2 py-1.5 rounded-xl hover:bg-white/5 text-gray-400 cursor-pointer transition"
         :class="{ 
-          'bg-gray-800 text-white': currentFolderId === folder.id,
-          'bg-green-900/50 border border-green-500': dropTarget === folder.id
+          'bg-white/10 text-white': currentFolderId === folder.id,
+          'text-accent-green': dropTarget === folder.id
         }"
         draggable="true"
         @dragstart="handleDragStart($event, folder.id)"
@@ -21,36 +21,36 @@
         <button 
           v-if="hasChildren(folder.id)"
           @click.stop="$emit('toggle', folder.id)"
-          class="p-0.5 hover:bg-gray-600 rounded"
+          class="p-0.5 hover:bg-white/10 rounded"
         >
           <svg 
-            class="w-4 h-4 transition-transform" 
+            class="w-3.5 h-3.5 transition-transform" 
             :class="{ 'rotate-90': expandedFolders.includes(folder.id) }"
             fill="none" stroke="currentColor" viewBox="0 0 24 24"
           >
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
           </svg>
         </button>
-        <div v-else class="w-4"></div>
+        <div v-else class="w-3.5"></div>
         
-        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" :style="{ color: getFolderColor(folder.id) }">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" :style="{ color: getFolderColor(folder.id) }">
           <path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
         </svg>
-        <span class="truncate flex-1">{{ folder.name }}</span>
+        <span class="truncate flex-1 text-xs font-medium">{{ folder.name }}</span>
         
         <button 
           v-if="dropTarget === folder.id"
-          class="text-xs text-green-400"
+          class="text-[10px] text-accent-green"
         >
-          Drop here
+          Drop
         </button>
         
         <button 
           v-else
           @click.stop="$emit('createSubfolder', folder.id)"
-          class="p-1 hover:bg-gray-600 rounded opacity-0 group-hover:opacity-100 transition"
+          class="p-1 hover:bg-white/10 rounded opacity-0 group-hover:opacity-100 transition"
         >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
           </svg>
         </button>
@@ -81,7 +81,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 
 const props = defineProps({
   folders: { type: Array, default: () => [] },
@@ -109,7 +109,6 @@ const handleDragStart = (event, folderId) => {
 
 const handleDragOver = (event, folderId) => {
   if (draggedFolderId.value && draggedFolderId.value !== folderId) {
-    isDragOver = folderId
     event.dataTransfer.dropEffect = 'move'
     emit('dragover', folderId)
   }
