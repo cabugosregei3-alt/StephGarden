@@ -6,10 +6,10 @@
       class="mb-0.5"
     >
       <div 
-        class="flex items-center gap-1.5 px-2 py-1.5 rounded-xl hover:bg-white/5 text-gray-400 cursor-pointer transition"
+        class="flex items-center gap-1.5 px-2 py-1.5 rounded-xl hover:bg-gray-100 text-gray-600 cursor-pointer transition"
         :class="{ 
-          'bg-white/10 text-white': currentFolderId === folder.id,
-          'text-accent-green': dropTarget === folder.id
+          'bg-gray-100 text-gray-700': currentFolderId === folder.id,
+          'text-gray-500 bg-gray-100': dropTarget === folder.id
         }"
         draggable="true"
         @dragstart="handleDragStart($event, folder.id)"
@@ -21,7 +21,7 @@
         <button 
           v-if="hasChildren(folder.id)"
           @click.stop="$emit('toggle', folder.id)"
-          class="p-0.5 hover:bg-white/10 rounded"
+          class="p-0.5 hover:bg-gray-200 rounded"
         >
           <svg 
             class="w-3.5 h-3.5 transition-transform" 
@@ -40,7 +40,7 @@
         
         <button 
           v-if="dropTarget === folder.id"
-          class="text-[10px] text-accent-green"
+          class="text-[10px] text-gray-500"
         >
           Drop
         </button>
@@ -48,7 +48,7 @@
         <button 
           v-else
           @click.stop="$emit('createSubfolder', folder.id)"
-          class="p-1 hover:bg-white/10 rounded opacity-0 group-hover:opacity-100 transition"
+          class="p-1 hover:bg-gray-200 rounded opacity-0 group-hover:opacity-100 transition"
         >
           <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>

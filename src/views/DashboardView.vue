@@ -1,6 +1,7 @@
 <template>
-  <div class="flex h-[calc(100vh-64px)]">
+  <div class="flex h-screen">
     <Sidebar 
+      v-if="!isSmallScreen"
       :rootFolders="rootFolders"
       :currentFolderId="currentFolderId"
       :expandedFolders="expandedFolders"
@@ -19,16 +20,43 @@
       @dragleave="dropTargetFolder = null"
     />
     
+    <div 
+      v-if="showMobileSidebar" 
+      class="fixed inset-0 z-50 md:hidden"
+    >
+      <div class="absolute inset-0 bg-black/50" @click="showMobileSidebar = false"></div>
+      <div class="absolute left-0 top-0 h-full w-72 bg-white shadow-xl">
+        <Sidebar 
+          :rootFolders="rootFolders"
+          :currentFolderId="currentFolderId"
+          :expandedFolders="expandedFolders"
+          :childFolders="childFolders"
+          :dropTarget="dropTargetFolder"
+          :folderColors="folderColors"
+          :getFolderColor="getFolderColor"
+          @selectFolder="selectFolder; showMobileSidebar = false"
+          @navigateRoot="navigateRoot; showMobileSidebar = false"
+          @createFolder="showCreateFolderModal = true; showMobileSidebar = false"
+          @createSubfolder="(parentId) => { parentFolderId = parentId; showCreateFolderModal = true; showMobileSidebar = false }"
+          @toggleExpand="toggleExpand"
+          @drop="handleSidebarDrop"
+          @dropRoot="handleDropRoot"
+          @dragover="dropTargetFolder = $event"
+          @dragleave="dropTargetFolder = null"
+        />
+      </div>
+    </div>
+    
     <div v-if="notifications.length > 0" class="fixed top-20 right-4 z-50 space-y-2">
       <div 
         v-for="notif in notifications" 
         :key="notif.id"
-        class="flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg max-w-sm"
+        class="flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg max-w-sm"
         :class="{
-          'bg-green-600 text-white': notif.type === 'success',
-          'bg-red-600 text-white': notif.type === 'error',
-          'bg-blue-600 text-white': notif.type === 'info',
-          'bg-yellow-600 text-white': notif.type === 'warning'
+          'bg-white text-gray-700': notif.type === 'success',
+          'bg-red-400 text-gray-100': notif.type === 'error',
+          'bg-white text-gray-700': notif.type === 'info',
+          'bg-yellow-100 text-gray-700': notif.type === 'warning'
         }"
       >
         <svg v-if="notif.type === 'success'" class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -41,7 +69,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
         </svg>
         <span class="flex-1 text-sm">{{ notif.message }}</span>
-        <button @click="removeNotification(notif.id)" class="p-1 hover:bg-white/20 rounded">
+        <button @click="removeNotification(notif.id)" class="p-1 hover:bg-white/20 rounded-lg">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
           </svg>
@@ -49,23 +77,23 @@
       </div>
     </div>
     
-    <div v-if="isUploading || isDeleting" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div class="bg-gray-900 border border-green-500/30 rounded-xl p-6 w-96">
+    <div v-if="isUploading || isDeleting" class="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
+      <div class="bg-white border border-gray-200 rounded-2xl p-4 md:p-6 w-full max-w-sm md:max-w-md shadow-xl">
         <div v-if="isUploading">
-          <h3 class="text-xl font-bold text-white mb-2">Uploading</h3>
-          <p class="text-gray-400 text-sm mb-4 truncate">{{ uploadProgress.fileName }}</p>
-          <div class="w-full bg-gray-700 rounded-full h-3 mb-2">
+          <h3 class="text-xl font-bold text-gray-700 mb-2">Uploading</h3>
+          <p class="text-gray-500 text-sm mb-4 truncate">{{ uploadProgress.fileName }}</p>
+          <div class="w-full bg-gray-100 rounded-full h-3 mb-2">
             <div 
-              class="bg-green-500 h-3 rounded-full transition-all duration-300"
+              class="bg-green-900 h-3 rounded-full transition-all duration-300"
               :style="{ width: uploadProgress.total > 0 ? (uploadProgress.current / uploadProgress.total * 100) + '%' : '0%' }"
             ></div>
           </div>
           <p class="text-gray-400 text-xs">{{ uploadProgress.current }} / {{ uploadProgress.total }} files</p>
         </div>
         <div v-else>
-          <h3 class="text-xl font-bold text-white mb-2">Deleting</h3>
-          <p class="text-gray-400 text-sm mb-4 truncate">{{ deleteConfirm.item?.name || 'Items' }}</p>
-          <div class="w-full bg-gray-700 rounded-full h-3 mb-2">
+          <h3 class="text-xl font-bold text-gray-700 mb-2">Deleting</h3>
+          <p class="text-gray-500 text-sm mb-4 truncate">{{ deleteConfirm.item?.name || 'Items' }}</p>
+          <div class="w-full bg-gray-100 rounded-full h-3 mb-2">
             <div 
               class="bg-red-500 h-3 rounded-full transition-all duration-300"
               :style="{ width: deleteProgress.value + '%' }"
@@ -76,114 +104,138 @@
       </div>
     </div>
     
-    <div v-if="deleteConfirm.show" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div class="bg-gray-900 border border-red-500/30 rounded-xl p-6 w-96">
-        <h3 class="text-xl font-bold text-white mb-2">Confirm Delete</h3>
-        <p class="text-gray-400 mb-4">
+    <div v-if="deleteConfirm.show" class="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
+      <div class="bg-white border border-gray-200 rounded-2xl p-4 md:p-6 w-full max-w-sm md:max-w-md shadow-xl">
+        <h3 class="text-xl font-bold text-gray-700 mb-2">Confirm Delete</h3>
+        <p class="text-gray-500 mb-4">
           Are you sure you want to delete 
-          <span class="text-white font-semibold">{{ deleteConfirm.type === 'folder' ? deleteConfirm.item?.name : deleteConfirm.item?.name }}</span>?
-          <span v-if="deleteConfirm.type === 'folder'" class="text-yellow-400 text-sm block mt-1">This will also delete all files inside.</span>
+          <span class="text-gray-700 font-semibold">{{ deleteConfirm.type === 'folder' ? deleteConfirm.item?.name : deleteConfirm.item?.name }}</span>?
+          <span v-if="deleteConfirm.type === 'folder'" class="text-yellow-600 text-sm block mt-1">This will also delete all files inside.</span>
         </p>
         <div class="flex gap-3">
-          <button @click="deleteConfirm.show = false; deleteConfirm.item = null" class="flex-1 px-4 py-2 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-800">Cancel</button>
-          <button @click="confirmDelete" class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Delete</button>
+          <button @click="deleteConfirm.show = false; deleteConfirm.item = null" class="flex-1 px-4 py-2 border border-gray-200 text-gray-600 rounded-xl hover:bg-gray-50">Cancel</button>
+          <button @click="confirmDelete" class="flex-1 px-4 py-2 bg-red-500 text-gray-100 rounded-xl hover:bg-red-600">Delete</button>
         </div>
       </div>
     </div>
     
-    <main class="flex-1 overflow-auto bg-dark-900 p-6">
+    <main 
+      class="flex-1 overflow-auto bg-gray-50 p-4 md:p-6 relative"
+      @dragenter.prevent="handleFileDragEnter"
+      @dragover.prevent="handleFileDragOver"
+      @dragleave.prevent="handleFileDragLeave"
+      @drop.prevent="handleFileDrop"
+    >
+      <div v-if="isDraggingFiles" class="absolute inset-0 bg-green-900/20 border-4 border-dashed border-green-400 z-40 flex items-center justify-center pointer-events-none">
+        <div class="bg-white rounded-2xl p-8 shadow-xl text-center">
+          <svg class="w-16 h-16 mx-auto text-green-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+          </svg>
+          <p class="text-xl font-bold text-gray-700">Drop files to upload</p>
+        </div>
+      </div>
+      
       <div class="mb-6">
-        <div class="flex items-center gap-2 text-sm text-gray-500 mb-6">
-          <button @click="navigateRoot" class="hover:text-white transition">Home</button>
+        <div class="flex items-center gap-2 text-sm text-gray-500 mb-4">
+          <button 
+            v-if="isSmallScreen"
+            @click="showMobileSidebar = true"
+            class="p-2 hover:bg-gray-100 rounded-lg transition"
+          >
+            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+          </button>
+          <button @click="navigateRoot" class="hover:text-gray-700 transition">Home</button>
           <template v-for="(crumb, index) in breadcrumbs" :key="crumb.id">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
             </svg>
             <button 
               @click="selectFolder(crumb.id)" 
-              class="hover:text-white transition"
-              :class="{ 'text-white': index === breadcrumbs.length - 1 }"
+              class="hover:text-gray-700 transition"
+              :class="{ 'text-gray-700 font-medium': index === breadcrumbs.length - 1 }"
             >
               {{ crumb.name }}
             </button>
           </template>
         </div>
         
-        <div class="flex gap-3 flex-wrap">
+        <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-2 px-2">
           <button 
             @click="showCreateFolderModal = true; parentFolderId = currentFolderId"
-            class="flex items-center gap-2 bg-accent-green text-white px-4 py-2.5 rounded-xl hover:opacity-90 transition font-medium"
+            class="flex items-center gap-2 bg-green-900 text-white px-3 py-2.5 md:px-4 md:py-2.5 rounded-xl hover:bg-green-600 transition font-medium shadow-sm flex-shrink-0 min-h-[44px]"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
             </svg>
-            New Folder
+            <span class="hidden md:inline">New Folder</span>
           </button>
           <button 
             @click="showCreateFileModal = true; parentFileFolderId = currentFolderId"
-            class="flex items-center gap-2 bg-accent-purple text-white px-4 py-2.5 rounded-xl hover:opacity-90 transition font-medium"
+            class="flex items-center gap-2 bg-green-900 text-white px-3 py-2.5 md:px-4 md:py-2.5 rounded-xl hover:bg-green-600 transition font-medium shadow-sm flex-shrink-0 min-h-[44px]"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
             </svg>
-            New Document
+            <span class="hidden md:inline">New Document</span>
           </button>
           <button 
             @click="showCreateSpreadsheetModal = true; parentSpreadsheetFolderId = currentFolderId"
-            class="flex items-center gap-2 bg-accent-purple text-white px-4 py-2.5 rounded-xl hover:opacity-90 transition font-medium"
+            class="flex items-center gap-2 bg-green-900 text-white px-3 py-2.5 md:px-4 md:py-2.5 rounded-xl hover:bg-green-600 transition font-medium shadow-sm flex-shrink-0 min-h-[44px]"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
             </svg>
-            New Spreadsheet
+            <span class="hidden md:inline">New Spreadsheet</span>
           </button>
           <button 
             @click="selectMode = !selectMode; selectedItems = []"
-            class="flex items-center gap-2 px-4 py-2.5 rounded-xl transition font-medium"
-            :class="selectMode ? 'bg-accent-green text-white hover:opacity-90' : 'bg-dark-700 text-white hover:bg-dark-600'"
+            class="flex items-center gap-2 px-3 py-2.5 md:px-4 md:py-2.5 rounded-xl transition font-medium shadow-sm flex-shrink-0 min-h-[44px]"
+            :class="selectMode ? 'bg-green-900 text-white hover:bg-green-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
             </svg>
-            {{ selectMode ? 'Cancel' : 'Select' }}
+            <span class="hidden md:inline">{{ selectMode ? 'Cancel' : 'Select' }}</span>
           </button>
           <button 
             v-if="selectedItems.length > 0"
             @click="showMoveModal = true"
-            class="flex items-center gap-2 bg-accent-purple text-white px-4 py-2.5 rounded-xl hover:opacity-90 transition font-medium"
+            class="flex items-center gap-2 bg-green-900 text-white px-3 py-2.5 md:px-4 md:py-2.5 rounded-xl hover:bg-green-600 transition font-medium shadow-sm flex-shrink-0 min-h-[44px]"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
             </svg>
-            Move to ({{ selectedItems.length }})
+            <span class="hidden md:inline">Move to ({{ selectedItems.length }})</span>
+            <span class="md:hidden">({{ selectedItems.length }})</span>
           </button>
-          <label class="flex items-center gap-2 bg-accent-purple text-white px-4 py-2.5 rounded-xl hover:opacity-90 transition font-medium cursor-pointer">
+          <label class="flex items-center gap-2 bg-green-900 text-white px-3 py-2.5 md:px-4 md:py-2.5 rounded-xl hover:bg-green-600 transition font-medium shadow-sm cursor-pointer flex-shrink-0 min-h-[44px]">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
             </svg>
-            Upload File
-            <input type="file" multiple @change="handleFileUpload" class="hidden" />
+            <span class="hidden md:inline">Upload File</span>
           </label>
         </div>
         
-        <div v-if="showNoStorageWarning || !activeProfileId" class="mt-4 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl">
+        <div v-if="showNoStorageWarning || !activeProfileId" class="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
           <div class="flex items-center gap-3">
-            <svg class="w-5 h-5 text-yellow-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5 text-yellow-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
             </svg>
             <div class="flex-1">
-              <p class="text-yellow-300 font-medium">No storage profile active</p>
-              <p class="text-gray-400 text-sm">Set up a storage profile in Settings to upload files</p>
+              <p class="text-yellow-700 font-medium">No storage profile active</p>
+              <p class="text-gray-500 text-sm">Set up a storage profile in Settings to upload files</p>
             </div>
-            <router-link to="/settings" class="px-4 py-2 bg-yellow-500 text-black text-sm font-medium rounded-lg hover:bg-yellow-400 transition">
+            <router-link to="/settings" class="px-4 py-2 bg-yellow-400 text-gray-700 text-sm font-medium rounded-lg hover:bg-yellow-500 transition">
               Go to Settings
             </router-link>
           </div>
         </div>
       </div>
       
-      <div v-if="currentFolders.length === 0 && currentFiles.length === 0" 
-           class="text-center py-20 text-gray-500">
+        <div v-if="currentFolders.length === 0 && currentFiles.length === 0" 
+           class="text-center py-20 text-gray-400">
         <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
         </svg>
@@ -191,14 +243,14 @@
         <p class="text-sm mt-2">Create a folder or add files to get started</p>
       </div>
       
-      <div v-else class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-3">
+      <div v-else class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
         <div 
           v-for="folder in currentFolders" 
           :key="folder.id"
-          class="bg-dark-800 border border-white/5 p-3 rounded-2xl transition-all duration-200 group relative cursor-pointer"
+          class="bg-white border border-gray-100 p-3 rounded-2xl transition-all duration-200 group relative cursor-pointer shadow-sm hover:shadow-md min-h-[80px]"
           :class="[
-            dropTargetFolder === folder.id ? 'border-accent-green/50 bg-accent-green/10' : '',
-            isSelected(folder.id, 'folder') ? 'border-accent-purple' : 'hover:border-white/10'
+            dropTargetFolder === folder.id ? 'border-gray-300 bg-gray-50' : '',
+            isSelected(folder.id, 'folder') ? 'border-gray-300 ring-2 ring-gray-300' : 'hover:border-gray-200'
           ]"
           :draggable="!selectMode"
           @dragstart="handleFolderDragStart($event, folder)"
@@ -216,26 +268,26 @@
                 :checked="isSelected(folder.id, 'folder')"
                 @click.stop
                 @change="toggleSelect(folder, 'folder')"
-                class="w-4 h-4 rounded accent-accent-purple cursor-pointer"
+                class="w-4 h-4 rounded accent-green-400 cursor-pointer"
               >
               <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24" :style="{ color: getFolderColor(folder.id) }">
                 <path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
               </svg>
             </div>
             <div class="relative" @click.stop>
-              <button @click="openMenuId = openMenuId === folder.id ? null : folder.id" class="p-1 opacity-0 group-hover:opacity-100 hover:bg-white/10 rounded-lg transition">
+              <button @click="openMenuId = openMenuId === folder.id ? null : folder.id" class="p-1 opacity-0 group-hover:opacity-100 hover:bg-gray-100 rounded-lg transition">
                 <svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
                 </svg>
               </button>
-              <div v-if="openMenuId === folder.id" class="absolute right-0 top-7 bg-dark-700 border border-white/10 rounded-xl shadow-2xl py-1 w-32 z-20">
-                <button @click="startRenameFolder(folder)" class="w-full px-3 py-2 text-left text-sm text-gray-300 hover:bg-white/5 flex items-center gap-2">
+              <div v-if="openMenuId === folder.id" class="absolute right-0 top-7 bg-white border border-gray-200 rounded-xl shadow-lg py-1 w-32 z-20">
+                <button @click="startRenameFolder(folder)" class="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                   </svg>
                   Rename
                 </button>
-                <button @click="showDeleteConfirm('folder', folder); openMenuId = null" class="w-full px-3 py-2 text-left text-sm text-red-400 hover:bg-white/5 flex items-center gap-2">
+                <button @click="showDeleteConfirm('folder', folder); openMenuId = null" class="w-full px-3 py-2 text-left text-sm text-red-500 hover:bg-red-50 flex items-center gap-2">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                   </svg>
@@ -244,28 +296,28 @@
               </div>
             </div>
           </div>
-          <p v-if="renamingFolderId !== folder.id" class="text-white/90 text-xs truncate font-medium" :class="{ 'ml-6': selectMode }">{{ folder.name }}</p>
+          <p v-if="renamingFolderId !== folder.id" class="text-gray-700 text-xs truncate font-medium" :class="{ 'ml-6': selectMode }">{{ folder.name }}</p>
           <input 
             v-else
             v-model="renamingFolderName"
             ref="renameInput"
-            class="w-full bg-dark-600 border border-accent-purple rounded-lg px-2 py-1 text-white text-xs focus:outline-none"
+            class="w-full bg-gray-50 border border-gray-300 rounded-lg px-2 py-1 text-gray-700 text-xs focus:outline-none focus:ring-2 focus:ring-gray-300"
             @blur="saveRenameFolder"
             @keyup.enter="saveRenameFolder"
             @keyup.escape="cancelRenameFolder"
             @click.stop
           >
           <p class="text-gray-500 text-[10px] mt-1">{{ formatDate(folder.updated_at) }}</p>
-          <p v-if="dropTargetFolder === folder.id" class="text-accent-green text-[10px] mt-1">Drop here</p>
+          <p v-if="dropTargetFolder === folder.id" class="text-green-500 text-[10px] mt-1">Drop here</p>
         </div>
         
         <div 
           v-for="file in currentFiles" 
           :key="file.id"
           :data-file-id="file.id"
-          class="bg-dark-800 border border-white/5 p-3 rounded-2xl cursor-pointer transition-all duration-200 group relative"
+          class="bg-white border border-gray-100 p-3 rounded-2xl cursor-pointer transition-all duration-200 group relative shadow-sm hover:shadow-md min-h-[80px]"
           :class="[
-            isSelected(file.id, 'file') ? 'border-accent-purple' : 'hover:border-white/10',
+            isSelected(file.id, 'file') ? 'border-gray-300 ring-2 ring-gray-300' : 'hover:border-gray-200',
           ]"
           :draggable="!selectMode"
           @dragstart="handleFileDragStart($event, file)"
@@ -280,21 +332,21 @@
                 :checked="isSelected(file.id, 'file')"
                 @click.stop
                 @change="toggleSelect(file, 'file')"
-                class="w-4 h-4 rounded accent-accent-purple cursor-pointer"
+                class="w-4 h-4 rounded accent-green-400 cursor-pointer"
               >
-              <div v-if="file.type === 'image'" class="w-8 h-8 rounded-lg overflow-hidden bg-dark-600">
+              <div v-if="file.type === 'image'" class="w-8 h-8 rounded-lg overflow-hidden bg-gray-100">
                 <img v-if="thumbnails[file.id]" :src="thumbnails[file.id]" class="w-full h-full object-cover" />
-                <svg v-else class="w-full h-full text-accent-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg v-else class="w-full h-full text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                 </svg>
               </div>
-              <div v-else-if="file.type === 'video'" class="w-8 h-8 rounded-lg overflow-hidden bg-dark-600 relative">
+              <div v-else-if="file.type === 'video'" class="w-8 h-8 rounded-lg overflow-hidden bg-gray-100 relative">
                 <img v-if="thumbnails[file.id]" :src="thumbnails[file.id]" class="w-full h-full object-cover" />
                 <svg v-else class="w-full h-full text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
                 </svg>
                 <div v-if="thumbnails[file.id]" class="absolute inset-0 flex items-center justify-center bg-black/30">
-                  <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-4 h-4 text-gray-100" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M8 5v14l11-7z"/>
                   </svg>
                 </div>
@@ -311,7 +363,7 @@
               <svg v-else-if="file.type === 'pdf'" class="w-8 h-8 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
               </svg>
-              <svg v-else-if="file.type === 'pptx'" class="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg v-else-if="file.type === 'pptx'" class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/>
               </svg>
               <svg v-else-if="file.type === 'archive'" class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -320,7 +372,7 @@
               <svg v-else-if="file.type === 'document'" class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
               </svg>
-              <svg v-else-if="file.type === 'spreadsheet'" class="w-8 h-8 text-accent-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg v-else-if="file.type === 'spreadsheet'" class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
               </svg>
               <svg v-else class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -331,7 +383,7 @@
               <button 
                 v-if="['image', 'video', 'audio', 'upload'].includes(file.type)"
                 @click.stop="downloadUploadedFile(file)"
-                class="p-1.5 hover:bg-white/10 rounded-lg transition"
+                class="p-1.5 hover:bg-gray-100 rounded-lg transition"
                 title="Download"
               >
                 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -340,7 +392,7 @@
               </button>
               <button 
                 @click.stop="showDeleteConfirm('file', file)"
-                class="p-1.5 hover:bg-white/10 rounded-lg transition"
+                class="p-1.5 hover:bg-gray-100 rounded-lg transition"
               >
                 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
@@ -348,69 +400,69 @@
               </button>
             </div>
           </div>
-          <p class="text-white/90 text-xs truncate font-medium" :class="{ 'ml-6': selectMode }">{{ file.name }}</p>
-          <p class="text-gray-500 text-[10px] mt-1">{{ formatDate(file.updated_at) }}</p>
+          <p class="text-gray-700 text-xs truncate font-medium" :class="{ 'ml-6': selectMode }">{{ file.name }}</p>
+          <p class="text-gray-400 text-[10px] mt-1">{{ formatDate(file.updated_at) }}</p>
         </div>
       </div>
     </main>
     
-    <div v-if="showCreateFolderModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div class="bg-gray-900 border border-green-500/30 rounded-xl p-6 w-96">
-        <h3 class="text-xl font-bold text-white mb-4">Create Folder</h3>
+    <div v-if="showCreateFolderModal" class="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
+      <div class="bg-white border border-gray-200 rounded-2xl p-4 md:p-6 w-full max-w-sm md:max-w-md shadow-xl">
+        <h3 class="text-xl font-bold text-gray-700 mb-4">Create Folder</h3>
         <input 
           v-model="newFolderName"
           type="text" 
-          class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:border-green-500 focus:outline-none"
+          class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-700 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300"
           placeholder="Folder name"
           @keyup.enter="createFolder"
         >
         <div class="flex gap-3 mt-4">
-          <button @click="showCreateFolderModal = false; newFolderName = ''" class="flex-1 px-4 py-2 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-800">Cancel</button>
-          <button @click="createFolder" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Create</button>
+          <button @click="showCreateFolderModal = false; newFolderName = ''" class="flex-1 px-4 py-2 border border-gray-200 text-gray-800 rounded-xl hover:bg-gray-50">Cancel</button>
+          <button @click="createFolder" class="flex-1 px-4 py-2 bg-green-900 text-white rounded-xl hover:bg-green-600 transition">Create</button>
         </div>
       </div>
     </div>
     
-    <div v-if="showCreateFileModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div class="bg-gray-900 border border-blue-500/30 rounded-xl p-6 w-96">
-        <h3 class="text-xl font-bold text-white mb-4">Create Document</h3>
+    <div v-if="showCreateFileModal" class="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
+      <div class="bg-white border border-gray-200 rounded-2xl p-4 md:p-6 w-full max-w-sm md:max-w-md shadow-xl">
+        <h3 class="text-xl font-bold text-gray-700 mb-4">Create Document</h3>
         <input 
           v-model="newFileName"
           type="text" 
-          class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:border-blue-500 focus:outline-none"
+          class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-700 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300"
           placeholder="Document name"
           @keyup.enter="createFile('document')"
         >
         <div class="flex gap-3 mt-4">
-          <button @click="showCreateFileModal = false; newFileName = ''" class="flex-1 px-4 py-2 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-800">Cancel</button>
-          <button @click="createFile('document')" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Create</button>
+          <button @click="showCreateFileModal = false; newFileName = ''" class="flex-1 px-4 py-2 border border-gray-200 text-gray-600 rounded-xl hover:bg-gray-50">Cancel</button>
+          <button @click="createFile('document')" class="flex-1 px-4 py-2 bg-green-900 text-white rounded-xl hover:bg-green-600 transition">Create</button>
         </div>
       </div>
     </div>
     
-    <div v-if="showCreateSpreadsheetModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div class="bg-gray-900 border border-yellow-500/30 rounded-xl p-6 w-96">
-        <h3 class="text-xl font-bold text-white mb-4">Create Spreadsheet</h3>
+    <div v-if="showCreateSpreadsheetModal" class="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
+      <div class="bg-white border border-gray-200 rounded-2xl p-4 md:p-6 w-full max-w-sm md:max-w-md shadow-xl">
+        <h3 class="text-xl font-bold text-gray-700 mb-4">Create Spreadsheet</h3>
         <input 
           v-model="newFileName"
           type="text" 
-          class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:border-yellow-500 focus:outline-none"
+          class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-700 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300"
           placeholder="Spreadsheet name"
           @keyup.enter="createFile('spreadsheet')"
         >
         <div class="flex gap-3 mt-4">
-          <button @click="showCreateSpreadsheetModal = false; newFileName = ''" class="flex-1 px-4 py-2 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-800">Cancel</button>
-          <button @click="createFile('spreadsheet')" class="flex-1 px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700">Create</button>
+          <button @click="showCreateSpreadsheetModal = false; newFileName = ''" class="flex-1 px-4 py-2 border border-gray-200 text-gray-600 rounded-xl hover:bg-gray-50">Cancel</button>
+          <button @click="createFile('spreadsheet')" class="flex-1 px-4 py-2 bg-green-900 text-white rounded-xl hover:bg-green-600 transition">Create</button>
         </div>
       </div>
     </div>
     
-    <div v-if="selectedFile" class="fixed inset-0 bg-black/90 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg w-[95vw] h-[95vh] flex flex-col overflow-hidden shadow-2xl">
+    <div v-if="selectedFile" class="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-2 md:p-4">
+      <div class="bg-white rounded-lg w-full h-full max-w-[95vw] max-h-[95vh] flex flex-col overflow-hidden shadow-2xl">
         <div class="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
           <input 
             v-model="selectedFile.name"
-            class="bg-transparent text-xl font-bold text-gray-800 focus:outline-none border-b-2 border-transparent focus:border-green-500"
+            class="bg-transparent text-xl font-bold text-gray-700 focus:outline-none border-b-2 border-transparent focus:border-green-500"
             @blur="saveFile"
             placeholder="Document name"
           >
@@ -451,7 +503,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
               </svg>
               <p class="text-gray-600 mb-4">Preview not available for this file type</p>
-              <button @click="downloadUploadedFile(selectedFile)" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700">
+              <button @click="downloadUploadedFile(selectedFile)" class="bg-white text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-100 border border-gray-200">
                 Download File
               </button>
             </div>
@@ -460,14 +512,14 @@
       </div>
     </div>
     
-    <div v-if="showMoveModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div class="bg-gray-900 border border-blue-500/30 rounded-xl p-6 w-[28rem] max-h-[80vh] flex flex-col">
-        <h3 class="text-xl font-bold text-white mb-4">Move to</h3>
-        <div class="flex-1 overflow-auto max-h-80 border border-gray-700 rounded-lg p-2 space-y-1">
+    <div v-if="showMoveModal" class="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
+      <div class="bg-white border border-gray-200 rounded-2xl p-4 md:p-6 w-full max-w-lg max-h-[80vh] flex flex-col shadow-xl">
+        <h3 class="text-xl font-bold text-gray-700 mb-4">Move to</h3>
+        <div class="flex-1 overflow-auto max-h-80 border border-gray-100 rounded-xl p-2 space-y-1">
           <button 
             @click="moveDestinationId = null"
-            class="w-full flex items-center gap-3 px-3 py-2 rounded-lg transition"
-            :class="moveDestinationId === null ? 'bg-green-600 text-white' : 'hover:bg-gray-800 text-gray-300'"
+            class="w-full flex items-center gap-3 px-3 py-2 rounded-xl transition"
+            :class="moveDestinationId === null ? 'bg-gray-100 text-gray-700' : 'hover:bg-gray-100 text-gray-600'"
           >
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
@@ -478,8 +530,8 @@
             <button 
               v-if="!isSelected(folder.id, 'folder')"
               @click="moveDestinationId = folder.id"
-              class="w-full flex items-center gap-3 px-3 py-2 rounded-lg transition"
-              :class="moveDestinationId === folder.id ? 'bg-green-600 text-white' : 'hover:bg-gray-800 text-gray-300'"
+              class="w-full flex items-center gap-3 px-3 py-2 rounded-xl transition"
+              :class="moveDestinationId === folder.id ? 'bg-gray-100 text-gray-700' : 'hover:bg-gray-100 text-gray-600'"
             >
               <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" :style="{ color: getFolderColor(folder.id) }">
                 <path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
@@ -489,8 +541,8 @@
           </template>
         </div>
         <div class="flex gap-3 mt-4">
-          <button @click="showMoveModal = false; moveDestinationId = null" class="flex-1 px-4 py-2 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-800">Cancel</button>
-          <button @click="moveSelectedItems" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Move Here</button>
+          <button @click="showMoveModal = false; moveDestinationId = null" class="flex-1 px-4 py-2 border border-gray-200 text-gray-600 rounded-xl hover:bg-gray-50">Cancel</button>
+          <button @click="moveSelectedItems" class="flex-1 px-4 py-2 bg-white text-gray-700 rounded-xl hover:bg-gray-100 border border-gray-200">Move Here</button>
         </div>
       </div>
     </div>
@@ -586,6 +638,47 @@ const isDeleting = ref(false)
 const activeProfileId = ref(null)
 const showNoStorageWarning = ref(false)
 const cachedActiveProfile = ref(null)
+const isDraggingFiles = ref(false)
+const showMobileSidebar = ref(false)
+const isMobile = ref(false)
+const isSmallScreen = ref(false)
+let dragCounter = 0
+
+const checkMobile = () => {
+  isSmallScreen.value = window.innerWidth < 768
+  isMobile.value = window.innerWidth < 640
+}
+
+const handleFileDragEnter = (e) => {
+  if (e.dataTransfer.types.includes('Files')) {
+    dragCounter++
+    isDraggingFiles.value = true
+  }
+}
+
+const handleFileDragOver = (e) => {
+  if (e.dataTransfer.types.includes('Files')) {
+    e.dataTransfer.dropEffect = 'copy'
+  }
+}
+
+const handleFileDragLeave = () => {
+  dragCounter--
+  if (dragCounter <= 0) {
+    dragCounter = 0
+    isDraggingFiles.value = false
+  }
+}
+
+const handleFileDrop = async (e) => {
+  isDraggingFiles.value = false
+  dragCounter = 0
+  
+  const files = e.dataTransfer.files
+  if (!files || files.length === 0) return
+  
+  await handleFileUpload({ target: { files } })
+}
 
 const currentFolders = computed(() => {
   if (!currentFolderId.value) return rootFolders.value
@@ -1073,9 +1166,17 @@ const deleteFile = async (fileId) => {
   await loadFiles()
 }
 
-const handleFileUpload = async (event) => {
-  const files = event.target.files
-  if (!files || !user.value) return
+const handleFileUpload = async (eventOrFiles) => {
+  let files
+  if (eventOrFiles.target && eventOrFiles.target.files) {
+    files = eventOrFiles.target.files
+  } else if (eventOrFiles instanceof FileList) {
+    files = eventOrFiles
+  } else {
+    return
+  }
+  
+  if (!files || !user.value || files.length === 0) return
   
   const { getActiveProfileId } = await import('../lib/storage.js')
   const storageProfileId = await getActiveProfileId()
@@ -1083,7 +1184,7 @@ const handleFileUpload = async (event) => {
   if (!storageProfileId) {
     showNotification('Please set up an active storage profile in Settings first', 'warning')
     showNoStorageWarning.value = true
-    event.target.value = ''
+    if (eventOrFiles.target) eventOrFiles.target.value = ''
     return
   }
   
@@ -1132,7 +1233,7 @@ const handleFileUpload = async (event) => {
   isUploading.value = false
   uploadProgress.value = { current: 0, total: 0, fileName: '' }
   await loadFiles()
-  event.target.value = ''
+  if (eventOrFiles.target) eventOrFiles.target.value = ''
 }
 
 const getFileCategory = (mimeType) => {
@@ -1352,6 +1453,9 @@ onMounted(async () => {
   if (isMounted) return
   isMounted = true
   
+  checkMobile()
+  window.addEventListener('resize', checkMobile)
+  
   document.addEventListener('click', () => {
     openMenuId.value = null
   })
@@ -1372,3 +1476,13 @@ watch(currentFiles, () => {
   setTimeout(setupThumbnailObserver, 50)
 })
 </script>
+
+<style scoped>
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+</style>

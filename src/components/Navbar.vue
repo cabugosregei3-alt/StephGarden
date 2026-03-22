@@ -1,22 +1,22 @@
 <template>
-  <header class="bg-black border-b border-gray-800">
+  <header class="bg-white border-b border-gray-200 shadow-sm">
     <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
       <router-link :to="user ? '/dashboard' : '/'" class="flex items-center gap-3">
-        <div class="w-10 h-10 bg-gradient-to-br from-green-400 to-green-600 rounded-xl flex items-center justify-center">
-          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="w-10 h-10 bg-gradient-to-br from-white to-gray-100 rounded-xl flex items-center justify-center shadow-sm">
+          <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
           </svg>
         </div>
-        <span class="text-xl font-bold text-white">Stefan Files</span>
+        <span class="text-xl font-bold text-gray-700">Stefan Files</span>
       </router-link>
       
       <div v-if="user" class="relative">
         <button 
           @click.stop="toggleDropdown"
-          class="flex items-center gap-2 bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition"
+          class="flex items-center gap-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-xl hover:bg-gray-200 transition"
         >
-          <div class="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
-            <span class="text-sm font-semibold">{{ userInitials }}</span>
+          <div class="w-8 h-8 bg-white rounded-full flex items-center justify-center">
+            <span class="text-sm font-semibold text-gray-700">{{ userInitials }}</span>
           </div>
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
@@ -25,12 +25,12 @@
         
         <div 
           v-if="dropdownOpen" 
-          class="absolute right-0 mt-2 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-xl py-2 z-50"
+          class="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-xl shadow-lg py-2 z-50"
         >
           <router-link 
             to="/settings" 
             @click="dropdownOpen = false"
-            class="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white transition flex items-center gap-2"
+            class="block px-4 py-2 text-gray-700 hover:bg-gray-50 transition flex items-center gap-2"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
@@ -40,7 +40,7 @@
           </router-link>
           <button 
             @click="handleLogout"
-            class="w-full text-left px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white transition flex items-center gap-2"
+            class="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-50 transition flex items-center gap-2"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
@@ -53,7 +53,7 @@
       <router-link 
         v-else
         to="/login" 
-        class="bg-green-500 text-black px-6 py-2 rounded-lg font-semibold hover:bg-green-400 transition"
+        class="bg-white text-gray-700 px-6 py-2 rounded-xl font-semibold hover:bg-gray-100 transition shadow-sm"
       >
         Get Started
       </router-link>

@@ -240,7 +240,7 @@
         <span v-if="lastSaved" class="text-xs text-gray-500">Saved {{ lastSaved }}</span>
         <button 
           @click="handleSave"
-          class="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-1.5 rounded font-medium text-sm transition"
+          class="flex items-center gap-2 bg-white hover:bg-gray-100 text-gray-700 px-4 py-1.5 rounded font-medium text-sm transition shadow-sm"
         >
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>

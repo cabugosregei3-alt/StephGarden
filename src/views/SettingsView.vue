@@ -1,74 +1,85 @@
 <template>
-  <div class="min-h-screen pt-20 p-4 overflow-auto">
+  <div class="min-h-screen p-4 overflow-auto bg-gray-50">
     <div class="w-full max-w-4xl mx-auto">
-      <div class="bg-black/50 border border-green-500/30 rounded-2xl p-8 mb-6">
-        <h2 class="text-2xl font-bold text-white text-center mb-8">Account Settings</h2>
+      <div class="mb-4">
+        <router-link 
+          to="/dashboard" 
+          class="inline-flex items-center gap-2 text-gray-600 hover:text-gray-800 transition"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+          </svg>
+          Back to Dashboard
+        </router-link>
+      </div>
+      <div class="bg-white border border-gray-200 rounded-2xl p-8 mb-6 shadow-sm">
+        <h2 class="text-2xl font-bold text-gray-700 text-center mb-8">Account Settings</h2>
         
         <form @submit.prevent="handleUpdate" class="space-y-6">
           <div>
-            <label class="block text-gray-300 mb-2 text-sm">Full Name</label>
+            <label class="block text-gray-700 mb-2 text-sm font-medium">Full Name</label>
             <input 
               v-model="fullName"
               type="text" 
-              class="w-full bg-gray-900 border border-green-500/30 rounded-lg px-4 py-3 text-white focus:border-green-500 focus:outline-none transition"
+              class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-700 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 transition"
               placeholder="Your name"
             >
           </div>
           
           <div>
-            <label class="block text-gray-300 mb-2 text-sm">Email</label>
+            <label class="block text-gray-700 mb-2 text-sm font-medium">Email</label>
             <input 
               v-model="email"
               type="email" 
-              class="w-full bg-gray-900 border border-green-500/30 rounded-lg px-4 py-3 text-white focus:border-green-500 focus:outline-none transition"
+              class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-700 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 transition"
               placeholder="you@example.com"
             >
           </div>
           
-          <hr class="border-gray-700">
+          <hr class="border-gray-200">
           
           <div>
-            <label class="block text-gray-300 mb-2 text-sm">New Password (leave blank to keep current)</label>
+            <label class="block text-gray-700 mb-2 text-sm font-medium">New Password (leave blank to keep current)</label>
             <input 
               v-model="newPassword"
               type="password" 
-              class="w-full bg-gray-900 border border-green-500/30 rounded-lg px-4 py-3 text-white focus:border-green-500 focus:outline-none transition"
+              class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-700 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 transition"
               placeholder="Min. 6 characters"
             >
           </div>
           
           <div>
-            <label class="block text-gray-300 mb-2 text-sm">Confirm New Password</label>
+            <label class="block text-gray-700 mb-2 text-sm font-medium">Confirm New Password</label>
             <input 
               v-model="confirmPassword"
               type="password" 
-              class="w-full bg-gray-900 border border-green-500/30 rounded-lg px-4 py-3 text-white focus:border-green-500 focus:outline-none transition"
+              class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-700 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 transition"
               placeholder="Confirm password"
             >
           </div>
           
-          <div v-if="error" class="text-red-400 text-sm text-center">{{ error }}</div>
-          <div v-if="success" class="text-green-400 text-sm text-center">{{ success }}</div>
+          <div v-if="error" class="text-red-500 text-sm text-center">{{ error }}</div>
+          <div v-if="success" class="text-gray-600 text-sm text-center">{{ success }}</div>
           
           <button 
             type="submit" 
             :disabled="loading"
-            class="w-full bg-green-500 text-black font-semibold py-3 rounded-lg hover:bg-green-400 transition disabled:opacity-50"
+            class="w-full bg-white text-gray-700 font-semibold py-3 rounded-xl hover:opacity-90 transition disabled:opacity-50 shadow-sm"
           >
             {{ loading ? 'Saving...' : 'Save Account Changes' }}
           </button>
         </form>
       </div>
 
-      <div class="bg-black/50 border border-blue-500/30 rounded-2xl p-8">
+      <div class="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm">
         <div class="flex items-center justify-between mb-6">
           <div>
-            <h2 class="text-2xl font-bold text-white">Storage Profiles</h2>
-            <p class="text-gray-400 text-sm mt-1">Configure multiple storage connections and switch between them</p>
+            <h2 class="text-2xl font-bold text-gray-700">Storage Profiles</h2>
+            <p class="text-gray-500 text-sm mt-1">Configure multiple storage connections and switch between them</p>
           </div>
           <button 
             @click="openProfileModal()"
-            class="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
+            class="flex items-center gap-2 bg-white text-gray-700 px-4 py-2 rounded-xl hover:opacity-90 transition shadow-sm"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
@@ -77,7 +88,7 @@
           </button>
         </div>
         
-        <div v-if="profiles.length === 0" class="text-center py-8 text-gray-500">
+        <div v-if="profiles.length === 0" class="text-center py-8 text-gray-400">
           <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2 1 3 3 3h10c2 0 3-1 3-3V7c0-2-1-3-3-3H7c-2 0-3 1-3 3z"/>
           </svg>
@@ -89,8 +100,8 @@
           <div 
             v-for="profile in profiles" 
             :key="profile.id"
-            class="border rounded-lg p-4 transition"
-            :class="profile.is_active ? 'border-green-500 bg-green-900/20' : 'border-gray-700 hover:border-gray-600'"
+            class="border rounded-xl p-4 transition"
+            :class="profile.is_active ? 'border-gray-300 bg-gray-50' : 'border-gray-200 hover:border-gray-300'"
           >
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-3">
@@ -101,38 +112,38 @@
                 ></div>
                 <div 
                   v-else
-                  class="w-3 h-3 rounded-full border-2 border-gray-600"
+                  class="w-3 h-3 rounded-full border-2 border-gray-300"
                   title="Inactive"
                 ></div>
                 <div>
-                  <p class="text-white font-medium">{{ profile.name }}</p>
-                  <p class="text-gray-400 text-sm">{{ profile.provider === 'storj' ? 'Storj' : 'S3' }} - {{ profile.bucket }}</p>
+                  <p class="text-gray-700 font-medium">{{ profile.name }}</p>
+                  <p class="text-gray-500 text-sm">{{ profile.provider === 'storj' ? 'Storj' : 'S3' }} - {{ profile.bucket }}</p>
                 </div>
               </div>
               <div class="flex items-center gap-2">
                 <button 
                   v-if="!profile.is_active"
                   @click="setActiveProfile(profile.id)"
-                  class="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition"
+                  class="px-3 py-1 text-sm bg-white text-green-600 rounded-lg hover:bg-gray-100 transition border border-gray-200"
                 >
                   Set Active
                 </button>
-                <span v-else class="px-3 py-1 text-sm text-green-400">Active</span>
+                <span v-else class="px-3 py-1 text-sm text-green-600 font-medium bg-green-50 px-3 py-1 rounded-lg">Active</span>
                 <button 
                   @click="openProfileModal(profile)"
-                  class="p-2 hover:bg-gray-700 rounded transition"
+                  class="p-2 hover:bg-gray-100 rounded-lg transition"
                   title="Edit"
                 >
-                  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                   </svg>
                 </button>
                 <button 
                   @click="deleteProfile(profile.id)"
-                  class="p-2 hover:bg-red-500/20 rounded transition"
+                  class="p-2 hover:bg-red-50 rounded-lg transition"
                   title="Delete"
                 >
-                  <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                   </svg>
                 </button>
@@ -143,27 +154,27 @@
       </div>
     </div>
     
-    <div v-if="showProfileModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div class="bg-gray-900 border border-blue-500/30 rounded-xl p-6 w-full max-w-md">
-        <h3 class="text-xl font-bold text-white mb-4">{{ editingProfile ? 'Edit' : 'Add' }} Storage Profile</h3>
+    <div v-if="showProfileModal" class="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
+      <div class="bg-white border border-gray-200 rounded-2xl p-6 w-full max-w-md shadow-xl">
+        <h3 class="text-xl font-bold text-gray-700 mb-4">{{ editingProfile ? 'Edit' : 'Add' }} Storage Profile</h3>
         
         <form @submit.prevent="saveProfile" class="space-y-4">
           <div>
-            <label class="block text-gray-300 mb-1 text-sm">Profile Name</label>
+            <label class="block text-gray-700 mb-1 text-sm font-medium">Profile Name</label>
             <input 
               v-model="profileForm.name"
               type="text" 
               required
-              class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:border-green-500 focus:outline-none transition"
+              class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-gray-700 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 transition"
               placeholder="My Storj Bucket"
             >
           </div>
           
           <div>
-            <label class="block text-gray-300 mb-1 text-sm">Provider</label>
+            <label class="block text-gray-700 mb-1 text-sm font-medium">Provider</label>
             <select 
               v-model="profileForm.provider"
-              class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:border-green-500 focus:outline-none transition"
+              class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-gray-700 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 transition"
             >
               <option value="storj">Storj</option>
               <option value="s3">S3-Compatible</option>
@@ -171,73 +182,73 @@
           </div>
           
           <div>
-            <label class="block text-gray-300 mb-1 text-sm">Endpoint</label>
+            <label class="block text-gray-700 mb-1 text-sm font-medium">Endpoint</label>
             <input 
               v-model="profileForm.endpoint"
               type="url" 
               required
-              class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:border-green-500 focus:outline-none transition"
+              class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-gray-700 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 transition"
               placeholder="https://gateway.storjshare.io"
             >
           </div>
           
           <div>
-            <label class="block text-gray-300 mb-1 text-sm">Region</label>
+            <label class="block text-gray-700 mb-1 text-sm font-medium">Region</label>
             <input 
               v-model="profileForm.region"
               type="text" 
-              class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:border-green-500 focus:outline-none transition"
+              class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-gray-700 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 transition"
               placeholder="us-east-1"
             >
           </div>
           
           <div>
-            <label class="block text-gray-300 mb-1 text-sm">Access Key ID</label>
+            <label class="block text-gray-700 mb-1 text-sm font-medium">Access Key ID</label>
             <input 
               v-model="profileForm.access_key_id"
               type="text" 
               required
-              class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:border-green-500 focus:outline-none transition"
+              class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-gray-700 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 transition"
               placeholder="Your access key ID"
             >
           </div>
           
           <div>
-            <label class="block text-gray-300 mb-1 text-sm">Secret Access Key</label>
+            <label class="block text-gray-700 mb-1 text-sm font-medium">Secret Access Key</label>
             <input 
               v-model="profileForm.secret_access_key"
               type="password" 
               required
-              class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:border-green-500 focus:outline-none transition"
+              class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-gray-700 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 transition"
               placeholder="Your secret access key"
             >
           </div>
           
           <div>
-            <label class="block text-gray-300 mb-1 text-sm">Bucket Name</label>
+            <label class="block text-gray-700 mb-1 text-sm font-medium">Bucket Name</label>
             <input 
               v-model="profileForm.bucket"
               type="text" 
               required
-              class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:border-green-500 focus:outline-none transition"
+              class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-gray-700 focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 transition"
               placeholder="your-bucket-name"
             >
           </div>
           
-          <div v-if="profileError" class="text-red-400 text-sm">{{ profileError }}</div>
+          <div v-if="profileError" class="text-red-500 text-sm">{{ profileError }}</div>
           
           <div class="flex gap-3 pt-2">
             <button 
               type="button"
               @click="closeProfileModal"
-              class="flex-1 px-4 py-2 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-800 transition"
+              class="flex-1 px-4 py-2 border border-gray-200 text-gray-600 rounded-xl hover:bg-gray-50 transition"
             >
               Cancel
             </button>
             <button 
               type="submit"
               :disabled="profileLoading"
-              class="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition disabled:opacity-50"
+              class="flex-1 px-4 py-2 bg-white text-gray-700 rounded-xl hover:opacity-90 transition disabled:opacity-50"
             >
               {{ profileLoading ? 'Saving...' : 'Save' }}
             </button>
