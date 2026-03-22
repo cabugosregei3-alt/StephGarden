@@ -67,7 +67,7 @@ const props = defineProps({
   getFolderColor: { type: Function, required: true }
 })
 
-const emit = defineEmits(['selectFolder', 'navigateRoot', 'createFolder', 'createSubfolder', 'drop', 'dropRoot', 'dragover', 'dragleave'])
+const emit = defineEmits(['selectFolder', 'navigateRoot', 'createFolder', 'createSubfolder', 'drop', 'dropRoot', 'dragover', 'dragleave', 'toggleExpand'])
 
 const handleSelectFolder = (folderId) => {
   emit('selectFolder', folderId)
