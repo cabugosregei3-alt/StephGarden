@@ -262,6 +262,7 @@
         <div 
           v-for="file in currentFiles" 
           :key="file.id"
+          :data-file-id="file.id"
           class="bg-black/50 border p-4 rounded-xl cursor-pointer transition group relative"
           :class="[
             isSelected(file.id, 'file') ? 'border-green-500' : '',
@@ -612,6 +613,8 @@ const isSelected = computed(() => {
   return (id, type) => selected.has(`${type}-${id}`)
 })
 
+let lastLoadedProfileId = null
+
 const loadFolders = async () => {
   if (!user.value) return
   
@@ -677,20 +680,23 @@ const loadFiles = async () => {
   if (!error && data) {
     currentFiles.value = data
     thumbnails.value = {}
-    await loadThumbnails(data)
   }
 }
 
 const loadThumbnails = async (files) => {
-  const { getDownloadUrl } = await import('../lib/storage.js')
+  if (!files || files.length === 0) return
   
   const mediaFiles = files.filter(f => 
-    (f.type === 'image' || f.type === 'video') && f.content?.storage_path
+    (f.type === 'image' || f.type === 'video') && 
+    f.content?.storage_path && 
+    !thumbnails.value[f.id]
   )
   
   if (mediaFiles.length === 0) return
   
-  const thumbPromises = mediaFiles.map(async (file) => {
+  const { getDownloadUrl } = await import('../lib/storage.js')
+  
+  const thumbPromises = mediaFiles.slice(0, 10).map(async (file) => {
     try {
       const url = await getDownloadUrl(file.content.storage_path)
       return [file.id, url]
@@ -700,7 +706,8 @@ const loadThumbnails = async (files) => {
   })
   
   const results = await Promise.all(thumbPromises)
-  thumbnails.value = { ...thumbnails.value, ...Object.fromEntries(results.filter(([_, v]) => v)) }
+  const newThumbs = Object.fromEntries(results.filter(([_, v]) => v))
+  thumbnails.value = { ...thumbnails.value, ...newThumbs }
 }
 
 const selectFolder = async (folderId) => {
@@ -1306,6 +1313,44 @@ const checkActiveProfile = async () => {
   activeProfileId.value = await getActiveProfileId()
 }
 
+let thumbnailObserver = null
+
+const setupThumbnailObserver = () => {
+  if (thumbnailObserver) {
+    thumbnailObserver.disconnect()
+  }
+  
+  thumbnailObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const fileId = entry.target.dataset.fileId
+        const file = currentFiles.value.find(f => f.id === fileId)
+        if (file && !thumbnails.value[fileId]) {
+          loadSingleThumbnail(file)
+        }
+      }
+    })
+  }, { rootMargin: '100px' })
+  
+  document.querySelectorAll('[data-file-id]').forEach(el => {
+    thumbnailObserver.observe(el)
+  })
+}
+
+const loadSingleThumbnail = async (file) => {
+  if (!file || thumbnails.value[file.id]) return
+  if (file.type !== 'image' && file.type !== 'video') return
+  if (!file.content?.storage_path) return
+  
+  try {
+    const { getDownloadUrl } = await import('../lib/storage.js')
+    const url = await getDownloadUrl(file.content.storage_path)
+    thumbnails.value[file.id] = url
+  } catch (err) {
+    console.error('Failed to load thumbnail:', err)
+  }
+}
+
 let isMounted = false
 
 onMounted(async () => {
@@ -1324,5 +1369,11 @@ onMounted(async () => {
     await loadFolders()
     await loadFiles()
   }
+  
+  setTimeout(setupThumbnailObserver, 100)
+})
+
+watch(currentFiles, () => {
+  setTimeout(setupThumbnailObserver, 50)
 })
 </script>
