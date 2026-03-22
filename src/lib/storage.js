@@ -94,7 +94,8 @@ const recreateS3Client = async () => {
   s3Client = new S3Client({
     endpoint: config.endpoint,
     region: config.region,
-    credentials: config.credentials
+    credentials: config.credentials,
+    forcePathStyle: true
   })
   return s3Client
 }
@@ -110,13 +111,16 @@ export const uploadFileToStorage = async (data, fileName, mimeType, userId) => {
   await recreateS3Client()
   
   const profileId = cachedProfileId || 'default'
-  const key = `${profileId}/${Date.now()}-${fileName}`
+  const sanitizedFileName = encodeURIComponent(fileName).replace(/[%@#/]/g, '_')
+  const key = `${profileId}/${Date.now()}-${sanitizedFileName}`
   
   const command = new PutObjectCommand({
     Bucket: config.bucket,
     Key: key,
     Body: data,
-    ContentType: mimeType
+    ContentType: mimeType || 'application/octet-stream',
+    ContentDisposition: `inline; filename="${sanitizedFileName}"`,
+    CacheControl: 'max-age=31536000'
   })
   
   await s3Client.send(command)
