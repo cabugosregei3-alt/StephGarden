@@ -789,18 +789,16 @@ const loadThumbnails = async (files) => {
   
   const { getDownloadUrl } = await import('../lib/storage.js')
   
-  const thumbPromises = mediaFiles.slice(0, 10).map(async (file) => {
+  const newThumbs = {}
+  for (const file of mediaFiles.slice(0, 10)) {
     try {
       const url = await getDownloadUrl(file.content.storage_path)
-      return [file.id, url]
+      newThumbs[file.id] = url
+      thumbnails.value = { ...thumbnails.value, [file.id]: url }
     } catch (err) {
-      return [file.id, null]
+      console.error('Failed to load thumbnail:', err)
     }
-  })
-  
-  const results = await Promise.all(thumbPromises)
-  const newThumbs = Object.fromEntries(results.filter(([_, v]) => v))
-  thumbnails.value = { ...thumbnails.value, ...newThumbs }
+  }
 }
 
 const selectFolder = async (folderId) => {
