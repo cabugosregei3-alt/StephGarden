@@ -342,12 +342,24 @@
               >
               <div v-if="file.type === 'image'" class="w-8 h-8 rounded-lg overflow-hidden bg-gray-100">
                 <img v-if="thumbnails[file.id]" :src="thumbnails[file.id]" class="w-full h-full object-cover" />
+                <div v-else-if="thumbnailsLoading[file.id]" class="w-full h-full flex items-center justify-center">
+                  <svg class="w-4 h-4 animate-spin text-gray-400" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                </div>
                 <svg v-else class="w-full h-full text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                 </svg>
               </div>
               <div v-else-if="file.type === 'video'" class="w-8 h-8 rounded-lg overflow-hidden bg-gray-100 relative">
                 <img v-if="thumbnails[file.id]" :src="thumbnails[file.id]" class="w-full h-full object-cover" />
+                <div v-else-if="thumbnailsLoading[file.id]" class="w-full h-full flex items-center justify-center">
+                  <svg class="w-4 h-4 animate-spin text-gray-400" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                </div>
                 <svg v-else class="w-full h-full text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
                 </svg>
@@ -627,6 +639,7 @@ const dropTargetFolder = ref(null)
 const draggedItem = ref(null)
 const draggedType = ref(null)
 const thumbnails = shallowRef({})
+const thumbnailsLoading = shallowRef({})
 const folderColors = shallowRef({})
 const renamingFolderId = ref(null)
 const renamingFolderName = ref('')
@@ -773,6 +786,8 @@ const loadFiles = async () => {
   if (!error && data) {
     currentFiles.value = data
     thumbnails.value = {}
+    thumbnailsLoading.value = {}
+    loadThumbnails(data)
   }
 }
 
@@ -789,14 +804,15 @@ const loadThumbnails = async (files) => {
   
   const { getDownloadUrl } = await import('../lib/storage.js')
   
-  const newThumbs = {}
   for (const file of mediaFiles.slice(0, 10)) {
+    thumbnailsLoading.value[file.id] = true
     try {
       const url = await getDownloadUrl(file.content.storage_path)
-      newThumbs[file.id] = url
       thumbnails.value = { ...thumbnails.value, [file.id]: url }
     } catch (err) {
       console.error('Failed to load thumbnail:', err)
+    } finally {
+      thumbnailsLoading.value[file.id] = false
     }
   }
 }
