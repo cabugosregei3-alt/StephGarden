@@ -37,7 +37,7 @@ const router = createRouter({
 
 let isRedirecting = false
 
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to, from) => {
   if (isRedirecting) {
     isRedirecting = false
     return
@@ -47,15 +47,11 @@ router.beforeEach(async (to, from, next) => {
   
   if (to.meta.requiresAuth) {
     if (!session) {
-      next('/login')
-    } else {
-      next()
+      return { path: '/login' }
     }
   } else if (session && (to.path === '/' || to.path === '/login' || to.path === '/signup')) {
     isRedirecting = true
-    next('/dashboard')
-  } else {
-    next()
+    return { path: '/dashboard' }
   }
 })
 
