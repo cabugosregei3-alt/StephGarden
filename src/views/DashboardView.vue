@@ -161,6 +161,28 @@
           </template>
         </div>
         
+        <div class="relative mb-3">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <input 
+            v-model="searchQuery"
+            type="text" 
+            placeholder="Search files and folders..."
+            class="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-gray-700 focus:outline-none focus:border-gray-300 focus:ring-2 focus:ring-gray-200 text-sm"
+            @input="handleSearch"
+          >
+          <button 
+            v-if="searchQuery"
+            @click="clearSearch"
+            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        
         <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-2 px-2">
           <button 
             @click="showCreateFolderModal = true; parentFolderId = currentFolderId"
@@ -580,7 +602,7 @@ const user = ref(null)
 const rootFolders = ref([])
 const allFolders = ref([])
 const childFolders = ref({})
-const currentFiles = ref([])
+const rawFiles = ref([])
 const currentFolderId = ref(null)
 const expandedFolders = ref([])
 const notifications = ref([])
@@ -661,6 +683,10 @@ const isDraggingFiles = ref(false)
 const showMobileSidebar = ref(false)
 const isMobile = ref(false)
 const isSmallScreen = ref(false)
+const searchQuery = ref('')
+const searchResults = ref({ folders: [], files: [] })
+const isSearching = ref(false)
+let searchTimeout = null
 let dragCounter = 0
 
 const checkMobile = () => {
@@ -699,9 +725,57 @@ const handleFileDrop = async (e) => {
   await handleFileUpload({ target: { files } })
 }
 
+const handleSearch = () => {
+  clearTimeout(searchTimeout)
+  if (!searchQuery.value.trim()) {
+    searchResults.value = { folders: [], files: [] }
+    isSearching.value = false
+    return
+  }
+  
+  isSearching.value = true
+  searchTimeout = setTimeout(async () => {
+    const query = searchQuery.value.toLowerCase()
+    
+    const matchedFolders = allFolders.value.filter(f => 
+      f.name.toLowerCase().includes(query)
+    )
+    
+    const matchedFiles = rawFiles.value.filter(f => 
+      f.name.toLowerCase().includes(query)
+    )
+    
+    searchResults.value = {
+      folders: matchedFolders,
+      files: matchedFiles
+    }
+    isSearching.value = false
+  }, 300)
+}
+
+const clearSearch = () => {
+  searchQuery.value = ''
+  searchResults.value = { folders: [], files: [] }
+  isSearching.value = false
+}
+
 const currentFolders = computed(() => {
+  if (searchQuery.value && searchResults.value.folders.length > 0) {
+    return searchResults.value.folders
+  }
   if (!currentFolderId.value) return rootFolders.value
   return allFolders.value.filter(f => f.parent_id === currentFolderId.value)
+})
+
+const currentFiles = computed(() => {
+  if (searchQuery.value && searchResults.value.files.length > 0) {
+    return searchResults.value.files
+  }
+  return filteredFiles.value
+})
+
+const filteredFiles = computed(() => {
+  return rawFiles.value
 })
 
 const userName = computed(() => {
@@ -784,7 +858,7 @@ const loadFiles = async () => {
   const { data, error } = await query
   
   if (!error && data) {
-    currentFiles.value = data
+    rawFiles.value = data
     thumbnails.value = {}
     thumbnailsLoading.value = {}
     loadThumbnails(data)
